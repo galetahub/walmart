@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'walmart/graber'
+require 'walmart/searcher'
 
 module Walmart
   class Application < ::Sinatra::Application
@@ -17,6 +18,21 @@ module Walmart
     post '/products' do
       @reviews = Graber.new(params[:product][:id]).reviews
       erb :products
+    end
+
+    get '/search' do
+      erb :search
+    end
+
+    post '/filters' do
+      search = Searcher.new(params[:product][:name])
+
+      if search.product_id
+        @reviews = Graber.new(search.product_id).reviews
+        erb :products
+      else
+        redirect "/"
+      end
     end
   end
 end
