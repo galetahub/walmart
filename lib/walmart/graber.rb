@@ -3,7 +3,7 @@ require 'walmart/review'
 
 module Walmart
   class Graber
-    URL = "http://www.walmart.com/ip/{id}"
+    URL = "http://www.walmart.com/reviews/api/product/{id}?limit=1000&page=1&sort=helpful&filters=&showProduct=false"
 
     class ParseError < StandardError
     end
@@ -30,7 +30,8 @@ module Walmart
       end
 
       def parse_response(response)
-        Review.from_product_page(response.body)
+        json = JSON.parse(response.body)
+        Review.from_product_page(json['reviewsHtml'])
       end
   end
 end
