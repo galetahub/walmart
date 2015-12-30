@@ -1,9 +1,10 @@
 require "httparty"
-require 'walmart/review'
+require 'walmart/review_collection'
 
 module Walmart
   class Graber
-    URL = "http://www.walmart.com/reviews/api/product/{id}?limit=1000&page=1&sort=helpful&filters=&showProduct=false"
+    PER_PAGE = 20
+    URL = "http://www.walmart.com/reviews/api/product/{id}?limit=#{PER_PAGE}&page={page}&sort=helpful&filters=&showProduct=false".freeze
 
     class ParseError < StandardError
     end
@@ -13,14 +14,28 @@ module Walmart
     end
 
     def reviews
-      response = fetch
-      parse_response(response)
+      @reviews ||= fetch_all_pages
     end
 
     protected
 
-      def fetch
-        response = HTTParty.get(URL.gsub('{id}', @product_id))
+      def fetch_all_pages
+        _page = 1
+        _reviews = ReviewCollection.new
+        _items = []
+
+        until _items.size == 0 && _page > 1 do
+          _items = parse_response(fetch(_page))
+          _reviews.concat(_items)
+          _page += 1
+        end
+
+        _reviews
+      end
+
+      def fetch(page)
+        _url = URL.gsub('{id}', @product_id).gsub('{page}', page.to_s)
+        response = HTTParty.get(_url)
 
         case response.code
         when 200 then response
@@ -31,7 +46,7 @@ module Walmart
 
       def parse_response(response)
         json = JSON.parse(response.body)
-        Review.from_product_page(json['reviewsHtml'])
+        ReviewCollection.from_product_page(json['reviewsHtml'])
       end
   end
 end

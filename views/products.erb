@@ -1,7 +1,10 @@
+<p>Found reviews: <%= @reviews.size %></p>
+<hr>
 <% @reviews.each do |review| %>
   <div class="review">
     <div class="customer_name"><%= review.customer_name %></div>
     <div class="rating"><%= review.rating %></div>
     <div class="message"><%= review.message %></div>
   </div>
+  <hr>
 <% end %>

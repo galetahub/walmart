@@ -1,1 +1,3 @@
 == Test
+
+  rackup config.ru
